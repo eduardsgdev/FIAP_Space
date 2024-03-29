@@ -3,7 +3,7 @@ Este é um projeto estudantil referente á uma reserva de espaços por parte dos
 
 Passos dados para criar o projeto:
 1º - Instalar comandos npm
-2º - Em sequência navegue no terminal para acessar a cineadmin e execute npm init, dentro do package.json renomeie o script de 'test' para 'start', acima de 'script', abra uma nova chave e valor dentro do objeto com "type": "commonjs".
+2º - Em sequência navegue no terminal para acessar a Space e execute npm init, dentro do package.json renomeie o script de 'test' para 'start', acima de 'script', abra uma nova chave e valor dentro do objeto com "type": "commonjs".
 3º - npm install webpack
 4º - npm install http-server
 5º - npm install @supabase/supabase-js
