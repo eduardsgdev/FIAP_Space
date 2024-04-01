@@ -125,4 +125,9 @@
 }
 #submit-button {
     background-color: #26234B;
+    color: white;
+}
+#clean-button {
+    background-color: #A464B8;
+    color: white;
 }

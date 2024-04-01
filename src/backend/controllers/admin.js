@@ -1,7 +1,7 @@
 const { createWebToken, decodedWebToken } = require('../security/token.js');
 const { selectConditions, updateRow, selectRow } = require('../models/utilQuerys.js');
 const { comparePassword } = require('../security/hash.js');
-const { searchUser } = require('../models/administrator/actions.js');
+const { searchUser, listSpaces, spaceUpdateStatus, selectSpaceById, insertSpace } = require('../models/administrator/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
 
 const login = async (request, response) => {
@@ -44,6 +44,120 @@ const login = async (request, response) => {
     }
 }
 
+const getSpaces = async (request, response) => {
+    //request example = { name: 'Quadra', status: '1', type: 'Salão de Festas' }
+    const data = {};
+
+    if (request.body.name != '') {
+        data.name = request.body.name;
+    }
+
+    if (request.body.status != 'all' && request.body.status != '') {
+        data.status = request.body.status;
+    }
+
+    if (request.body.type != '') {
+        data.type = request.body.type;
+    }
+
+    const spaces = await listSpaces(data);
+    
+    if (spaces.length == 0) {
+        return response.status(400).json({ message: 'Nenhum espaço encontrado.'});
+    }
+
+    return response.status(200).json({ message: 'Lista de Espaços', data: spaces });
+
+}
+
+const getSpace = async (request, response) => {
+    //request example = { id: 1 }
+    const data = request.body;
+    
+    if (!data.id) {
+        return response.status(400).json({ message: 'É necessário enviar um id.'});
+    }
+    
+    const selectSpace = await selectSpaceById(data.id);
+    const space = selectSpace[0];
+
+    if (!space) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
+    }
+
+    return response.status(200).json({ message: '', data: space });
+}
+
+const addSpace = async (request, response) => {
+    /*request example = {
+        name: 'Lugar Diferente',
+        address: 'Av. Dom Pedro, 131',
+        city: 'São Paulo',
+        state: 'São Paulo',
+        zip_code: '01310930',
+        capacity: 20,
+        status, 1,
+        type: 'Área de Lazer',
+        image: {
+            0: 'https://url.example1',
+            1: 'https://url.example2'
+        }
+    }*/
+
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt);   
+    const data = {};
+
+    const spaceArr = ['name', 'address', 'city', 'state', "zip_code", "capacity", "status", "type", "image"];
+    for (const item of spaceArr) {
+        if (request.body[item] == '' || request.body[item] == undefined || request.body[item] == null) {
+            return response.status(400).json({ message: 'Os campos precisam está devidamente setados.' });
+        }
+
+        data[item] = request.body[item];
+    }
+
+    insertLog('logs_admin', decodedToken.userData.id, 'ADDSPACE', data);
+
+    insertSpace(data);
+
+    return response.status(201).json({ message: 'Adicionado com sucesso.' });
+
+}
+
+const updateStatus = async (request, response) => {
+    //request example = { id: 1, status: 1 }
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt);
+    const data = request.body;
+
+    if (data.status < 0 || data.status > 1) {
+        return response.status(400).json({ message: 'Status não permitido!' });
+    } else if (!data.id) {
+        return response.status(400).json({ message: 'É necessário enviar um id.'});
+    }
+    
+    const selectSpace = await selectSpaceById(data.id);
+    const space = selectSpace[0];
+
+    if (!space) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.' });
+    } else if (space && space.status == data.status) {
+        return response.status(400).json({ message: 'Nenhum dado foi alterado.' });
+    }
+
+    spaceUpdateStatus(data.status, data.id);
+
+    insertLog('logs_admin', decodedToken.userData.id, 'UPDATESTATUS', data);
+
+    return response.status(200).json({ message: 'Status atualizado com sucesso.' });
+    
+}
+
 module.exports = {
-    login
+    login,
+    getSpaces,
+    getSpace,
+    addSpace,
+    updateStatus
 }
