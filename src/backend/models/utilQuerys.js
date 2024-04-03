@@ -95,12 +95,13 @@ Select sintaxe example:
       name: 'Eduardo'
     });
 ---------------------------------------------*/
-const selectConditions = async (table, field, where_conditions, order_field, order_direction) => {
+const selectConditions = async (table, field, where_conditions, column_like, like, order_field, order_direction) => {
   try {
     const { data: response, error } = await supabase
       .from(table)
       .select(field)
       .match(where_conditions)
+      .ilike(column_like, like)
       .order(order_field, { 
         ascending: order_direction === 'asc', 
         descending: order_direction === 'desc' 
@@ -129,7 +130,7 @@ Select sintaxe example:
       'table2.id': '1'
     });
 */
-const selectInnerJoin = async (table, fields_select_table, join_table, fields_select_join, where_conditions, columnLike, like, order_field, order_direction) => {
+const selectInnerJoin = async (table, fields_select_table, join_table, fields_select_join, where_conditions, column_like, like, order_field, order_direction) => {
   try {
       const { data, error } = await supabase
           .from(table)
@@ -138,7 +139,7 @@ const selectInnerJoin = async (table, fields_select_table, join_table, fields_se
             ${join_table} ( ${fields_select_join} )
           `)
           .match(where_conditions)
-          .ilike(columnLike, like)
+          .ilike(column_like, like)
           .order(order_field, { 
             ascending: order_direction === 'asc', 
             descending: order_direction === 'desc' 

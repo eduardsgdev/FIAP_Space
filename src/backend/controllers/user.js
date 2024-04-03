@@ -9,7 +9,12 @@ const {
     searchLogin, 
     updatePassToken, 
     getPassToken, 
-    updatePassword
+    updatePassword,
+    listSpaces,
+    listSpace,
+    getUserReserves,
+    getUserReserve,
+    reserveUpdate
 } = require('../models/user/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
 const { baseUrl } = require('../config/baseUrl.js');
@@ -195,9 +200,127 @@ const changePassword = async (request, response) => {
     
 }
 
+const getSpaces = async (request, response) => {
+    //request example = { name: 'Quadr', capacity: 50, type: 'Salão de Festas' }
+    const data = {}
+
+    if (request.body.capacity != '') {
+        data.capacity = request.body.capacity;
+    }
+    
+    if (request.body.type != '') {
+        data.type = request.body.type;
+    }
+
+    const name = request.body.name;
+
+    const spaces = await listSpaces(data, name);
+    
+    if (spaces.length == 0) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.' });
+    }
+
+    return response.status(200).json({ message: 'Lista de Espaços', data: spaces });
+}
+
+const getSpace = async (request, response) => {
+    //request example = { id: 1 }
+    const data = request.body;
+
+    if (data.id == '' || data.id == undefined) {
+        return response.status(400).json({ message: 'É necessário enviar um id!'});
+    }
+
+    const selectSpace = await listSpace(data.id);
+    const space = selectSpace[0];
+
+    if (!space) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
+    }
+
+    return response.status(200).json({ message: 'Sucesso', data: space });
+}
+
+const getReserves = async (request, response) => {
+    //request example = { status: 1 } 1: Active, 0: Cancelled
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt); 
+    const data = request.body;
+
+    if (data.status < 0 || data.status > 1) {
+        return response.status(400).json({ message: 'Status enviado não é permitido.' });
+    } else if (!data.status) {
+        return response.status(400).json({ message: 'Enviar o status é necessário!'});
+    }
+
+    const reserves = await getUserReserves(decodedToken.userData.id, data.status);
+
+    if (reserves.length == 0) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
+    }
+
+    return response.status(200).json({ message: 'Reservas do usuário', data: reserves });
+}
+
+const getReserve = async (request, response) => {
+    //request example = { reserve_id: 1 }
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt); 
+    const data = request.body;
+
+    if (!data.reserve_id) {
+        return response.status(400).json({ message: 'Enviar o ID é necessário.'});
+    }
+
+    const reserve = await getUserReserve(decodedToken.userData.id, data.reserve_id);
+
+    if (reserve.length == 0) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
+    }
+
+    return response.status(200).json({ message: 'Reserva do usuário', data: reserve });
+}
+
+const reserveCancel = async (request, response) => {
+    //request example = { reserve_id: 1, status: 1 } 1: Active, 0: Cancelled
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt); 
+    const data = request.body;
+
+    if (data.reserve_id == '' || data.reserve_id == undefined) {
+        return response.status(400).json({ message: 'Enviar o ID da reserva é obrigatório!'});
+    } else if (data.status !== "0") {
+        return response.status(400).json({ message: 'O status enviado não é permitido.'});
+    } else if (!data.status) {
+        return response.status(400).json({ message: 'Enviar o status é obrigatório.'});
+    }
+
+    const selectReserve = await getUserReserve(decodedToken.userData.id, data.reserve_id);
+    const reserve = selectReserve[0];
+
+    if (!reserve) {
+        return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
+    }
+    
+    if (reserve.status == data.status) {
+        return response.status(400).json({ message: 'Nenhum dado foi alterado.'});
+    }
+
+    insertLog('logs_admin', decodedToken.userData.id, 'CANCELRESERVE', data);
+
+    reserveUpdate(data.status, data.reserve_id);
+    
+    return response.status(200).json({ message: 'Sua reserva foi atualizada.' });
+}
+
 module.exports = {
     addUser,
     login,
     resetPassword,
-    changePassword
+    changePassword,
+    getSpaces,
+    getSpace,
+    getReserves,
+    getReserve,
+    reserveCancel
 }

@@ -6,8 +6,12 @@ const searchUser = (login) => {
     })
 }
 
-const listSpaces = (space) => {
-    return selectConditions('spaces', '*', space, 'id', 'asc');
+const listSpaces = (space, spaceName) => {
+    if (spaceName == undefined || spaceName == null) {
+        spaceName = '';
+    }
+
+    return selectConditions('spaces', '*', space, 'name', `%${spaceName}%`, 'id', 'asc');
 }
 
 const spaceUpdateStatus = (newStatus, spaceId) => {

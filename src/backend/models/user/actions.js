@@ -1,4 +1,4 @@
-const { selectRow, updateRow, insertRow, selectInnerJoin } = require('../utilQuerys.js');
+const { selectRow, updateRow, insertRow, selectInnerJoin, selectConditions } = require('../utilQuerys.js');
 
 const checkLoginAvailable = (requestedLogin) => {
     return selectRow('users', 'login', 'login', requestedLogin);
@@ -28,6 +28,30 @@ const updatePassword = (newPassword, userId) => {
     updateRow('users', { password: newPassword }, 'id', userId);
 }
 
+const listSpaces = (space, spaceName) => {
+    if (spaceName == undefined || spaceName == null) {
+        spaceName = '';
+    }
+
+    return selectConditions('spaces', '*', space, 'name',`%${spaceName}%`, 'id',  'asc');
+}
+
+const listSpace = (spaceId) => {
+    return selectRow('spaces', '*', 'id', spaceId);
+}
+
+const getUserReserves = (userId, statusReserve) => {
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { user_id: userId, status: statusReserve }, 'spaces.name' , '%%', 'id', 'asc');
+}
+
+const getUserReserve = (userId, reserveId) => {
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { user_id: userId, id: reserveId }, 'spaces.name' , '%%', 'id', 'asc');
+}
+
+const reserveUpdate = (newStatus, reserveId) => {
+    updateRow('spaces_reserved', { status: newStatus }, 'id', reserveId);
+}
+
 module.exports = {
     insertUser,
     checkLoginAvailable,
@@ -35,5 +59,10 @@ module.exports = {
     searchLogin,
     updatePassToken,
     getPassToken,
-    updatePassword
+    updatePassword,
+    listSpaces,
+    listSpace,
+    getUserReserves,
+    getUserReserve,
+    reserveUpdate
 }
