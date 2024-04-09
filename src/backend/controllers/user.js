@@ -14,11 +14,14 @@ const {
     listSpace,
     getUserReserves,
     getUserReserve,
-    reserveUpdate
+    reserveUpdate,
+    checkSpaceAvailable,
+    addUserReserve
 } = require('../models/user/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
 const { baseUrl } = require('../config/baseUrl.js');
 const { v4: uuidv4 } = require('uuid');
+const moment = require('moment');
 
 const addUser = async (request, response) => {
     const data = request.body;
@@ -313,6 +316,60 @@ const reserveCancel = async (request, response) => {
     return response.status(200).json({ message: 'Sua reserva foi atualizada.' });
 }
 
+const addReserve = async (request, response) => {
+    /*request example = {
+        start_reservation: '2024-03-05 08:00:00',
+        final_reservation: '2024-03-05 12:00:00',
+        qtd_hours: 4,
+        user_id: 1,
+        space_id: 1
+    }*/
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt);
+    const data = request.body;
+
+    const fieldArr = ['start_reservation', 'final_reservation', 'qtd_hours', 'user_id', 'space_id'];
+    for (const item of fieldArr) {
+        if (data[item] == undefined || data[item] == '') {
+            return response.status(400).json({ message: 'Todos os campos são obrigatórios!' });
+        }
+    }
+
+    if (data.start_reservation > data.final_reservation) {
+        return response.status(400).json({ message: 'A data inicial não pode ser maior que o final da reserva.' });
+    }
+
+    const start = moment(data.start_reservation, 'YYYY-MM-DD HH:mm:ss');
+    const end = moment(data.final_reservation, 'YYYY-MM-DD HH:mm:ss');
+
+    const diff = moment.duration(end.diff(start));
+
+    if (data.qtd_hours < 1 || diff.hours() == 0) {
+        return response.status(400).json({ message: 'A permanencia mínima de horas não pode ser menor que 1 hora.' });
+    } else if (data.qtd_hours > 8 || diff.hours() >= 8 && diff.minutes() > 0) {
+        return response.status(400).json({ message: 'A permanencia máxima de horas não pode ser maior que 8 horas.' });
+    }
+
+    const space = await listSpace(data.space_id);
+    if (space.length == 0) {
+        return response.status(400).json({ message: 'Este espaço não está disponível.'})
+    }
+
+    const selectReserve = await checkSpaceAvailable(data.space_id, data.start_reservation, data.final_reservation);
+    const reserve = selectReserve[0];    
+
+    if (reserve) {
+        return response.status(400).json({ message: 'Já existe uma reserva para este local no periodo solicitado.' });
+    }
+
+    insertLog('logs_user', decodedToken.userData.id, 'ADDRESERVE', data);
+
+    addUserReserve(decodedToken.userData.id, data);
+
+    return response.status(201).json({ message: 'Sua reserva foi concluída com sucesso.' });
+
+}
+
 module.exports = {
     addUser,
     login,
@@ -322,5 +379,6 @@ module.exports = {
     getSpace,
     getReserves,
     getReserve,
-    reserveCancel
+    reserveCancel,
+    addReserve,
 }

@@ -117,6 +117,42 @@ const selectConditions = async (table, field, where_conditions, column_like, lik
   }
 }
 
+/*---------------------------------------------
+Select sintaxe example:
+    .from('spaces_reserved')
+    .select('*')
+    .match({
+      space_id: 1,
+      status: 1
+    })
+    .lte('start_reservation', '2024-04-05 08:00:00')
+    .gte('final_reservation', '2024-04-05 15:00:00')
+    .order('id', { ascending: 'asc'})
+---------------------------------------------*/
+const checkReserve = async (table, field, where_conditions, inicial_range, final_range, order_field, order_direction) => {
+  try {
+    const { data: response, error } = await supabase
+      .from(table)
+      .select(field)
+      .match(where_conditions)
+      .lte('start_reservation', final_range)
+      .gte('final_reservation', inicial_range)
+      .order(order_field, { 
+        ascending: order_direction === 'asc', 
+        descending: order_direction === 'desc' 
+      });
+       
+    if (error) {
+      throw error;
+    }
+
+    return response;
+
+  } catch (error) {
+      console.error('Erro na consulta de usuário:', error.message);
+  }
+}
+
 /*
 Select sintaxe example:
     .from('table1')
@@ -184,5 +220,6 @@ module.exports = {
   deleteRow,
   insertRow,
   selectConditions,
-  selectInnerJoin
+  selectInnerJoin,
+  checkReserve
 }

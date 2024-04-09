@@ -21,5 +21,6 @@ router.post('/src/backend/controllers/user/getSpace', security.verifyWebToken, u
 router.post('/src/backend/controllers/user/getReserves', security.verifyWebToken, user.getReserves);
 router.post('/src/backend/controllers/user/getReserve', security.verifyWebToken, user.getReserve);
 router.post('/src/backend/controllers/user/reserveCancel', security.verifyWebToken, user.reserveCancel);
+router.put('/src/backend/controllers/user/addReserve', security.verifyWebToken, user.addReserve);
 
 module.exports = router;
