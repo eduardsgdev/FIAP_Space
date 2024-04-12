@@ -48,11 +48,11 @@ const getSpaces = async (request, response) => {
     //request example = { name: 'Quadra', status: '1', type: 'Salão de Festas' }
     const data = {};
 
-    if (request.body.status != 'all' && request.body.status != '') {
+    if (request.body.status != 'all') {
         data.status = request.body.status;
     }
 
-    if (request.body.type != '') {
+    if (request.body.type != 'all') {
         data.type = request.body.type;
     }
 
@@ -64,7 +64,7 @@ const getSpaces = async (request, response) => {
         return response.status(400).json({ message: 'Nenhum espaço encontrado.'});
     }
 
-    return response.status(200).json({ message: 'Lista de Espaços', data: spaces });
+    return response.status(200).json({ message: 'Lista de Espaços', spaces: spaces });
 
 }
 
