@@ -26,10 +26,25 @@ const insertSpace = (space) => {
     insertRow('spaces', space);
 }
 
+const updateSpace = (data) => {
+    updateRow('spaces', { 
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip_code: data.zip_code,
+        capacity: data.capacity,
+        status: data.status,
+        type: data.type,
+        image: data.image
+    }, 'id', data.id);
+}
+
 module.exports = {
     searchUser,
     listSpaces,
     spaceUpdateStatus,
     selectSpaceById,
-    insertSpace
+    insertSpace,
+    updateSpace
 }

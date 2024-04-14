@@ -36,10 +36,12 @@
                 <select class="form-select m-1" aria-label="Default" id="select-type">
                     <option value="all" selected>Tipos de Espaço</option>
                     <option value="Área de Lazer">Área de Lazer</option>
-                    <option value="Campo Society">Área de Lazer</option>
+                    <option value="Beach Tênis">Beach Tênis</option>
+                    <option value="Campo Society">Campo Society</option>
                     <option value="Quadra Esportiva">Quadra Esportiva</option>
                     <option value="Salão de Festa">Salão de Festa</option>
                     <option value="Sala de Reunião">Sala de Reunião</option>
+                    <option value="Quadra de Tênis">Quadra de Tênis</option>
                 </select>
                 <div class="ms-auto d-flex align-self-end">
                     <button type="button" id="clean-button" class="btn m-1 text-white d-flex"><i class="bi bi-trash mt-1 me-2 text-white" style="line-height: 0;"></i>Limpar</button>
@@ -220,7 +222,7 @@ function editStatus(statusBtn) {
                 statusBtn.disabled = false;
             }, 1000);
         });
-    })
+    });
 }
 
 function redirectToEditSpace(spaceBtn) {
@@ -231,7 +233,12 @@ function redirectToEditSpace(spaceBtn) {
 
 var newSpaceBtn = document.getElementById('new-space');
 newSpaceBtn.addEventListener('click', () => {
-    window.location.href = `../space-register/index.html?`;
+    window.location.href = `../space-register/index.html`;
 });
+
+var cleanBtn = document.getElementById('clean-button');
+cleanBtn.addEventListener('click', () => {
+    cleanInputsArray(['search-input', 'select-status', 'select-type'])
+})
 
 </script>

@@ -1,4 +1,4 @@
-export function cleanInputsArray(ids) {
+export function cleanInputsArray(ids, arrFields = null) {
     ids.forEach(function (id) {
         const element = document.getElementById(id);
 
@@ -12,7 +12,13 @@ export function cleanInputsArray(ids) {
 
         if (element.tagName == 'SELECT') {
             element.selectedIndex = 0;
-        }       
+        }
+        
+        if (arrFields != null) {
+            Array.from(arrFields).forEach(element => {
+                element.value = '';
+            });
+        }
     });
 }
 

@@ -1,7 +1,7 @@
 const { createWebToken, decodedWebToken } = require('../security/token.js');
 const { selectConditions, updateRow, selectRow } = require('../models/utilQuerys.js');
 const { comparePassword } = require('../security/hash.js');
-const { searchUser, listSpaces, spaceUpdateStatus, selectSpaceById, insertSpace } = require('../models/administrator/actions.js');
+const { searchUser, listSpaces, spaceUpdateStatus, selectSpaceById, insertSpace, updateSpace } = require('../models/administrator/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
 
 const login = async (request, response) => {
@@ -94,7 +94,7 @@ const addSpace = async (request, response) => {
         state: 'São Paulo',
         zip_code: '01310930',
         capacity: 20,
-        status, 1,
+        status: 1,
         type: 'Área de Lazer',
         image: {
             0: 'https://url.example1',
@@ -152,10 +152,52 @@ const updateStatus = async (request, response) => {
     
 }
 
+const editSpace = async (request, response) => {
+    /*request example = {
+        id: '3',
+        name: 'Lugar Diferente',
+        address: 'Av. Dom Pedro, 131',
+        city: 'São Paulo',
+        state: 'São Paulo',
+        zip_code: '01310930',
+        capacity: 20,
+        status: 1,
+        type: 'Área de Lazer',
+        image: {
+            0: 'https://url.example1',
+            1: 'https://url.example2'
+        }
+    }*/
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt);
+    const data = request.body;
+
+    const spaceArr = ['name', 'address', 'city', 'state', "zip_code", "capacity", "status", "type", "image"];
+    for (const item of spaceArr) {
+        if (request.body[item] == '' || request.body[item] == undefined || request.body[item] == null) {
+            return response.status(400).json({ message: 'Os campos precisam está devidamente setados.' });
+        }
+    }
+
+    const selectSpace = await selectSpaceById(data.id);
+    const space = selectSpace[0];
+
+    if (!space) {
+        return response.status(400).json({ message: 'Espaço não encontrado!' });
+    }
+
+    insertLog('logs_admin', decodedToken.userData.id, 'EDITSPACE', data);
+
+    updateSpace(data);
+
+    return response.status(200).json({ message: 'Dados editado com sucesso.' });
+}
+
 module.exports = {
     login,
     getSpaces,
     getSpace,
     addSpace,
-    updateStatus
+    updateStatus,
+    editSpace
 }
