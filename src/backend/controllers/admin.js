@@ -69,14 +69,14 @@ const getSpaces = async (request, response) => {
 }
 
 const getSpace = async (request, response) => {
-    //request example = { id: 1 }
-    const data = request.body;
+    //request example = .../administrator/getSpace?id=1
+    const data = request.query.id;
     
-    if (!data.id) {
+    if (!data) {
         return response.status(400).json({ message: 'É necessário enviar um id.'});
     }
     
-    const selectSpace = await selectSpaceById(data.id);
+    const selectSpace = await selectSpaceById(data);
     const space = selectSpace[0];
 
     if (!space) {
