@@ -83,7 +83,7 @@ const getSpace = async (request, response) => {
         return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
     }
 
-    return response.status(200).json({ message: '', data: space });
+    return response.status(200).json({ message: '', space: space });
 }
 
 const addSpace = async (request, response) => {

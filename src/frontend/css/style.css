@@ -134,3 +134,11 @@
 #clean-button:hover, #submit-button:hover, #new-space:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
+
+@media only screen and (max-width: 991px) {
+    #filters-space-list {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 2px;
+    }
+}
