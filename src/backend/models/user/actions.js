@@ -37,7 +37,7 @@ const listSpaces = (space, spaceName) => {
 }
 
 const listSpace = (spaceId) => {
-    return selectRow('spaces', '*', 'id', spaceId);
+    return selectConditions('spaces', '*', { id: spaceId, status: 1}, 'name', '%%', 'id', 'asc');
 }
 
 const getUserReserves = (userId, statusReserve) => {

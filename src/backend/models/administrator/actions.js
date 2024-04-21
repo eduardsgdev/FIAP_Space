@@ -36,6 +36,8 @@ const updateSpace = (data) => {
         capacity: data.capacity,
         status: data.status,
         type: data.type,
+        prize: data.prize,
+        description: data.description,
         image: data.image
     }, 'id', data.id);
 }

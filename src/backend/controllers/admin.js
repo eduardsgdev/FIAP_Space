@@ -96,6 +96,8 @@ const addSpace = async (request, response) => {
         capacity: 20,
         status: 1,
         type: 'Área de Lazer',
+        prize: 250,
+        description: 'Um lugar diferente',
         image: {
             0: 'https://url.example1',
             1: 'https://url.example2'
@@ -106,7 +108,7 @@ const addSpace = async (request, response) => {
     const decodedToken = await decodedWebToken(jwt);   
     const data = {};
 
-    const spaceArr = ['name', 'address', 'city', 'state', "zip_code", "capacity", "status", "type", "image"];
+    const spaceArr = ['name', 'address', 'city', 'state', 'zip_code', 'capacity', 'status', 'type', 'image', 'prize', 'description'];
     for (const item of spaceArr) {
         if (request.body[item] == '' || request.body[item] == undefined || request.body[item] == null) {
             return response.status(400).json({ message: 'Os campos precisam está devidamente setados.' });
@@ -163,6 +165,8 @@ const editSpace = async (request, response) => {
         capacity: 20,
         status: 1,
         type: 'Área de Lazer',
+        prize: 299,
+        description: 'Um lugar muito diferente'
         image: {
             0: 'https://url.example1',
             1: 'https://url.example2'
@@ -172,7 +176,7 @@ const editSpace = async (request, response) => {
     const decodedToken = await decodedWebToken(jwt);
     const data = request.body;
 
-    const spaceArr = ['name', 'address', 'city', 'state', "zip_code", "capacity", "status", "type", "image"];
+    const spaceArr = ['name', 'address', 'city', 'state', 'zip_code', 'capacity', 'status', 'type', 'image', 'prize', 'description'];
     for (const item of spaceArr) {
         if (request.body[item] == '' || request.body[item] == undefined || request.body[item] == null) {
             return response.status(400).json({ message: 'Os campos precisam está devidamente setados.' });

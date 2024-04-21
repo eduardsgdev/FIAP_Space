@@ -211,19 +211,20 @@ const getSpaces = async (request, response) => {
         data.capacity = request.body.capacity;
     }
     
-    if (request.body.type != '') {
+    if (request.body.type != 'all') {
         data.type = request.body.type;
     }
 
     const name = request.body.name;
-
+    
+    data.status = 1;
     const spaces = await listSpaces(data, name);
     
     if (spaces.length == 0) {
         return response.status(400).json({ message: 'Nenhum dado foi encontrado.' });
     }
 
-    return response.status(200).json({ message: 'Lista de Espaços', data: spaces });
+    return response.status(200).json({ message: 'Lista de Espaços', spaces: spaces });
 }
 
 const getSpace = async (request, response) => {
@@ -241,7 +242,7 @@ const getSpace = async (request, response) => {
         return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
     }
 
-    return response.status(200).json({ message: 'Sucesso', data: space });
+    return response.status(200).json({ message: 'Sucesso', space: space });
 }
 
 const getReserves = async (request, response) => {
