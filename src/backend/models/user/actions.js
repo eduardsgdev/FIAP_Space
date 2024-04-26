@@ -41,7 +41,15 @@ const listSpace = (spaceId) => {
 }
 
 const getUserReserves = (userId, statusReserve) => {
-    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { user_id: userId, status: statusReserve }, 'spaces.name' , '%%', 'id', 'asc');
+    let data = {
+        user_id: userId,
+    }
+
+    if (statusReserve != 'all') {
+        data.status = statusReserve;
+    }
+
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', data, 'spaces.name' , '%%', 'id', 'asc');
 }
 
 const getUserReserve = (userId, reserveId) => {

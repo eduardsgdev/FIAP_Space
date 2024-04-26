@@ -2,7 +2,7 @@
 Creates a top modal based bootstrap, automatically when was invoked.
 Pass title, content message and color if 400 or 200 example: createTopModal('Sucesso', feedback.message, 'text-bg-success')
 */
-export function createTopModal(title, message, color) {
+export function createTopModal(title, message, color, dismiss = false) {
     const modal = document.createElement("div");
     modal.classList.add("modal", "fade");
     modal.id = "staticBackdrop";
@@ -46,7 +46,7 @@ export function createTopModal(title, message, color) {
     closeButtonFooter.type = "button";
     closeButtonFooter.classList.add("btn", color);
     closeButtonFooter.setAttribute("data-bs-dismiss", "modal");
-    closeButtonFooter.textContent = "Fechar";
+    closeButtonFooter.textContent = dismiss == false ? 'Fechar' : dismiss;
 
     modalFooter.appendChild(closeButtonFooter);
 

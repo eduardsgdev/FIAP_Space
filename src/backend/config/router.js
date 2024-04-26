@@ -17,7 +17,7 @@ router.put('/src/backend/controllers/user/addUser', user.addUser);
 router.post('/src/backend/controllers/user/login', user.login);
 router.post('/src/backend/controllers/user/resetPassword', user.resetPassword);
 router.post('/src/backend/controllers/user/changePassword', user.changePassword);
-router.post('/src/backend/controllers/user/getSpaces', user.getSpaces);
+router.post('/src/backend/controllers/user/getSpaces', security.verifyWebToken ,user.getSpaces);
 router.post('/src/backend/controllers/user/getSpace', security.verifyWebToken, user.getSpace);
 router.post('/src/backend/controllers/user/getReserves', security.verifyWebToken, user.getReserves);
 router.post('/src/backend/controllers/user/getReserve', security.verifyWebToken, user.getReserve);

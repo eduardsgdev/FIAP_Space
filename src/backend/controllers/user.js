@@ -246,7 +246,7 @@ const getSpace = async (request, response) => {
 }
 
 const getReserves = async (request, response) => {
-    //request example = { status: 1 } 1: Active, 0: Cancelled
+    //request example = { status: 1 } 1: Active, 0: Cancelled, all: All
     const jwt = request.headers['authorization'];
     const decodedToken = await decodedWebToken(jwt); 
     const data = request.body;
@@ -263,7 +263,7 @@ const getReserves = async (request, response) => {
         return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
     }
 
-    return response.status(200).json({ message: 'Reservas do usuário', data: reserves });
+    return response.status(200).json({ message: 'Reservas do usuário', reserves: reserves });
 }
 
 const getReserve = async (request, response) => {

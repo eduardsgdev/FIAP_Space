@@ -152,11 +152,6 @@
         transform: scale(1.1);
     }
 }
-@media (max-width: 500px) {
-    .reserve-menu-background {
-        height: 250px;
-    }
-}
 @media (max-width: 750px) {
     .space-details {
         display: inline-block;
@@ -170,4 +165,24 @@
 }
 #prize-card:hover {
     color: red;
+}
+#img-space:hover {
+    cursor: pointer;
+}
+.pointer {
+    cursor: pointer;
+}
+.reserve-menu-background, .images-details {
+    height: 660px;
+    text-align: center;
+}
+@media (max-width: 850px) {
+    .reserve-menu-background {
+        height: 330px;
+    }
+    .images-details {
+        height: 330px;
+        background-position: center;
+        background-size: cover;
+    }
 }
