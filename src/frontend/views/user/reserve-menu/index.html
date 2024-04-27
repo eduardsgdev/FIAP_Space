@@ -55,7 +55,7 @@ const spaceId = getValueQueryString('id');
 var spaceDiv = document.getElementById('space-reserve');
 function getSpace() {
     if (!spaceId || spaceId == 0) {
-        setInterval(() => {
+        setTimeout(() => {
             window.location.href = '../space-list/index.html';
         }, 2000);
         return createTopModal('Reservar Espaço', 'Espaço inexistente!', 'text-bg-danger');

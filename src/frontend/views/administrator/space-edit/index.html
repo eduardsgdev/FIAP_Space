@@ -314,7 +314,7 @@ form.addEventListener('submit', (event) => {
         return createTopModal('Editar Espaço', data.message, 'text-bg-success');
 
     });
-    setInterval(() => {
+    setTimeout(() => {
         loadingRemove(submitBtn);
         submitBtn.disabled.false;
     }, 1000);
