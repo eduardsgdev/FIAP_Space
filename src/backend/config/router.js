@@ -13,6 +13,7 @@ router.get('/src/backend/controllers/administrator/getSpace', security.verifyWeb
 router.put('/src/backend/controllers/administrator/addSpace', security.verifyWebToken, admin.addSpace);
 router.post('/src/backend/controllers/administrator/updateStatus', security.verifyWebToken, admin.updateStatus);
 router.post('/src/backend/controllers/administrator/editSpace', security.verifyWebToken, admin.editSpace);
+router.post('/src/backend/controllers/administrator/getReserves', security.verifyWebToken, admin.getReserves);
 router.put('/src/backend/controllers/user/addUser', user.addUser);
 router.post('/src/backend/controllers/user/login', user.login);
 router.post('/src/backend/controllers/user/resetPassword', user.resetPassword);

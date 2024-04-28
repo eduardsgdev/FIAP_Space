@@ -1,4 +1,4 @@
-const { selectRow, updateRow, insertRow, selectConditions } = require('../utilQuerys.js');
+const { selectRow, updateRow, insertRow, selectConditions, selectInnerJoin } = require('../utilQuerys.js');
 
 const searchUser = (login) => {
     return selectRow('users', 'id, name, login, password, nivel, status', 'login', login).then(response => {
@@ -42,11 +42,16 @@ const updateSpace = (data) => {
     }, 'id', data.id);
 }
 
+const getAllReserves = (status) => {
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { status: status }, 'spaces.name' , '%%', 'start_reservation', 'desc');
+}
+
 module.exports = {
     searchUser,
     listSpaces,
     spaceUpdateStatus,
     selectSpaceById,
     insertSpace,
-    updateSpace
+    updateSpace,
+    getAllReserves
 }

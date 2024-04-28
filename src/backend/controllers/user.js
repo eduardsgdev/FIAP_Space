@@ -318,7 +318,7 @@ const reserveCancel = async (request, response) => {
         return response.status(400).json({ message: 'Nenhum dado foi alterado.'});
     }
 
-    insertLog('logs_admin', decodedToken.userData.id, 'CANCELRESERVE', data);
+    insertLog('logs_user', decodedToken.userData.id, 'CANCELRESERVE', data);
 
     reserveUpdate(data.status, data.reserve_id);
     
@@ -353,11 +353,14 @@ const addReserve = async (request, response) => {
 
     const selectRecorrency = await checkRecorrencyReserve(data.space_id);
     const recorrency = selectRecorrency[0];
-    const recorrencyStartDate = new Date(recorrency.start_reservation).getTime();
 
-    if (recorrency.user_id == decodedToken.userData.id && recorrencyStartDate > now) {
-        return response.status(400).json({ message: 'Não é possível realizar dois agendamentos ativos do mesmo espaço consecutivamente.'});
+    if (recorrency) {
+        const recorrencyStartDate = new Date(recorrency.start_reservation).getTime();
+        if (recorrency.user_id == decodedToken.userData.id && recorrencyStartDate > now) {
+            return response.status(400).json({ message: 'Não é possível realizar dois agendamentos ativos do mesmo espaço consecutivamente.'});
+        }
     }
+
   
     if (data.start_reservation > data.final_reservation) {
         return response.status(400).json({ message: 'A data inicial não pode ser maior que o final da reserva.' });
@@ -396,7 +399,7 @@ const addReserve = async (request, response) => {
     sendEmail(
         data.email, 
         'Space - Agendamento de Espaço', 
-        `A reserva foi concluída com sucesso, este email será nosso nosso canal de contato para esta reserva!
+        `A reserva  do espaço ${space.name} foi concluída com sucesso, este email será nosso nosso canal de contato para esta reserva!
         
         Atenciosamente, Grupo Q Fiap`,
         );
