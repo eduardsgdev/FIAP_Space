@@ -1,4 +1,4 @@
-const { selectRow, updateRow, insertRow, selectInnerJoin, selectConditions, checkReserve } = require('../utilQuerys.js');
+const { selectRow, updateRow, insertRow, selectInnerJoin, selectConditions, checkReserve, selectRows } = require('../utilQuerys.js');
 
 const checkLoginAvailable = (requestedLogin) => {
     return selectRow('users', 'login', 'login', requestedLogin);
@@ -13,7 +13,7 @@ const checkEmailAvailable = (requestedEmail) => {
 }
 
 const searchLogin = (login) => {
-    return selectRow('users', 'id, name, login, password, nivel, status', 'login', login);
+    return selectRow('users', 'id, name, login, password, nivel, status, email', 'login', login);
 }
 
 const updatePassToken = (uniqId, userId) => {
@@ -49,7 +49,7 @@ const getUserReserves = (userId, statusReserve) => {
         data.status = statusReserve;
     }
 
-    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', data, 'spaces.name' , '%%', 'id', 'asc');
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', data, 'spaces.name' , '%%', 'start_reservation', 'asc');
 }
 
 const getUserReserve = (userId, reserveId) => {
@@ -71,8 +71,14 @@ const addUserReserve = (userID, insertData) => {
         reserved_hours: insertData.qtd_hours,
         user_id: userID,
         space_id: insertData.space_id,
-        status: 1
+        status: 1,
+        responsible_contact: insertData.email,
+        total_prize: insertData.total_prize
     });
+}
+
+const checkRecorrencyReserve = (spaceId) => {
+    return selectRows('spaces_reserved', '*', { space_id: spaceId, status: 1 }, 'id', 'desc');
 }
 
 module.exports = {
@@ -89,5 +95,6 @@ module.exports = {
     getUserReserve,
     reserveUpdate,
     checkSpaceAvailable,
-    addUserReserve
+    addUserReserve,
+    checkRecorrencyReserve
 }

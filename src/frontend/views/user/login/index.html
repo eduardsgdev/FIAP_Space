@@ -82,6 +82,7 @@ form.addEventListener('submit', (event) => {
                 window.location.href = '../space-list/index.html';
             }, 1000);
             localStorage.setItem('tokenUserFiap', feedback.authorization.token);
+            localStorage.setItem('email', feedback.email);
         } else {
             createTopModal('Falha no login', feedback.message, 'text-bg-danger');
         }

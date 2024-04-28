@@ -16,7 +16,8 @@ const {
     getUserReserve,
     reserveUpdate,
     checkSpaceAvailable,
-    addUserReserve
+    addUserReserve,
+    checkRecorrencyReserve
 } = require('../models/user/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
 const { baseUrl } = require('../config/baseUrl.js');
@@ -125,7 +126,7 @@ const login = async (request, response) => {
 
                 const authorization = createWebToken(user.id, user.name, user.login, user.nivel);
 
-                return response.status(200).json({ message: 'Logado com sucesso.', authorization});
+                return response.status(200).json({ message: 'Logado com sucesso.', authorization, email: user.email });
 
             } else {
                 return response.status(401).json({ message: 'Nível não permitido!'});
@@ -302,6 +303,13 @@ const reserveCancel = async (request, response) => {
     const selectReserve = await getUserReserve(decodedToken.userData.id, data.reserve_id);
     const reserve = selectReserve[0];
 
+    const now = new Date().getTime();
+    const startDate = new Date(reserve.start_reservation).getTime();
+
+    if (now > startDate) {
+        return response.status(400).json({ message: 'Não é possível cancelar uma reserva já iniciada!'});
+    }
+
     if (!reserve) {
         return response.status(400).json({ message: 'Nenhum dado foi encontrado.'});
     }
@@ -322,20 +330,35 @@ const addReserve = async (request, response) => {
         start_reservation: '2024-03-05 08:00:00',
         final_reservation: '2024-03-05 12:00:00',
         qtd_hours: 4,
-        user_id: 1,
-        space_id: 1
+        space_id: 1,
+        email: jose.maluquinho@gmail.com,
     }*/
     const jwt = request.headers['authorization'];
     const decodedToken = await decodedWebToken(jwt);
     const data = request.body;
 
-    const fieldArr = ['start_reservation', 'final_reservation', 'qtd_hours', 'user_id', 'space_id'];
+    const fieldArr = ['start_reservation', 'final_reservation', 'qtd_hours', 'space_id', 'email'];
     for (const item of fieldArr) {
         if (data[item] == undefined || data[item] == '') {
             return response.status(400).json({ message: 'Todos os campos são obrigatórios!' });
         }
     }
 
+    const now = new Date().getTime();
+    const startDate = new Date(data.start_reservation).getTime();
+
+    if (now > startDate) {
+        return response.status(400).json({ message: 'Você não pode fazer uma reserva com a data passada'});
+    }
+
+    const selectRecorrency = await checkRecorrencyReserve(data.space_id);
+    const recorrency = selectRecorrency[0];
+    const recorrencyStartDate = new Date(recorrency.start_reservation).getTime();
+
+    if (recorrency.user_id == decodedToken.userData.id && recorrencyStartDate > now) {
+        return response.status(400).json({ message: 'Não é possível realizar dois agendamentos ativos do mesmo espaço consecutivamente.'});
+    }
+  
     if (data.start_reservation > data.final_reservation) {
         return response.status(400).json({ message: 'A data inicial não pode ser maior que o final da reserva.' });
     }
@@ -353,8 +376,11 @@ const addReserve = async (request, response) => {
 
     const space = await listSpace(data.space_id);
     if (space.length == 0) {
-        return response.status(400).json({ message: 'Este espaço não está disponível.'})
+        return response.status(400).json({ message: 'Este espaço não está disponível.'});
     }
+
+    data.total_prize = space[0].prize * data.qtd_hours;
+    data.user_id = decodedToken.userData.id;
 
     const selectReserve = await checkSpaceAvailable(data.space_id, data.start_reservation, data.final_reservation);
     const reserve = selectReserve[0];    
@@ -366,6 +392,14 @@ const addReserve = async (request, response) => {
     insertLog('logs_user', decodedToken.userData.id, 'ADDRESERVE', data);
 
     addUserReserve(decodedToken.userData.id, data);
+
+    sendEmail(
+        data.email, 
+        'Space - Agendamento de Espaço', 
+        `A reserva foi concluída com sucesso, este email será nosso nosso canal de contato para esta reserva!
+        
+        Atenciosamente, Grupo Q Fiap`,
+        );
 
     return response.status(201).json({ message: 'Sua reserva foi concluída com sucesso.' });
 

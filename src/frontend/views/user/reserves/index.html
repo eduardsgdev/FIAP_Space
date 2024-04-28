@@ -120,7 +120,7 @@ function listReserves() {
                             class="btn btn-outline-danger btns-reserve-user m-1" ${isActive(reserves.status, reserveTimestamp.getTime()).disabled}>
                             <i class="bi bi-x-circle m-1"></i> ${isActive(reserves.status, reserveTimestamp.getTime()).status}</button>
                         <span class="card-text m-1" style="font-size: small">Término: ${brazilianDate(reserves.final_reservation)} <i class="bi bi-calendar-x m-1"></i></span>
-                        <span id="prize-card">Total: $ ${reserves.spaces.prize * reserves.reserved_hours}</span>
+                        <span id="prize-card">Total: $ ${reserves.total_prize}</span>
                     </div>
                 </div>`;
             

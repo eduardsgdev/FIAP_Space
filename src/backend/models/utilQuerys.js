@@ -194,6 +194,34 @@ const selectInnerJoin = async (table, fields_select_table, join_table, fields_se
 }
 
 /*---------------------------------------------
+Select sintaxe example:
+    .from('users')
+    .select('*')
+    .eq('id', 1);
+    .order('space_id', 'ascending')
+*/
+const selectRows = async (table, field, where_conditions, order_field, order_direction) => {
+  try {
+    const { data: response, error } = await supabase
+      .from(table)
+      .select(field)
+      .match(where_conditions)
+      .order(order_field, { 
+        ascending: order_direction === 'asc', 
+        descending: order_direction === 'desc' 
+      });
+       
+    if (error) {
+      throw error;
+    }
+    return response;
+
+  } catch (error) {
+      console.error('Erro na consulta de usuário:', error.message);
+  }
+}
+
+/*---------------------------------------------
 Filters sintaxe by example:
   let { data: response, error } = await supabase
     .from('users')
@@ -221,5 +249,6 @@ module.exports = {
   insertRow,
   selectConditions,
   selectInnerJoin,
-  checkReserve
+  checkReserve,
+  selectRows
 }
