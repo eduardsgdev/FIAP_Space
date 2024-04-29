@@ -1,8 +1,9 @@
 const { createWebToken, decodedWebToken } = require('../security/token.js');
 const { selectConditions, updateRow, selectRow } = require('../models/utilQuerys.js');
 const { comparePassword } = require('../security/hash.js');
-const { searchUser, listSpaces, spaceUpdateStatus, selectSpaceById, insertSpace, updateSpace } = require('../models/administrator/actions.js');
+const { searchUser, listSpaces, spaceUpdateStatus, selectSpaceById, insertSpace, updateSpace, getAllReserves } = require('../models/administrator/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 const login = async (request, response) => {
     //request example = { login: '11111111111', password: 'xxxxx' }
@@ -197,11 +198,59 @@ const editSpace = async (request, response) => {
     return response.status(200).json({ message: 'Dados editado com sucesso.' });
 }
 
+const getReserves = async (request, response) => {
+    //request example = { status: 1, export: 'csv' } 1: Active, 0: Inactives
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt);
+    const data = request.body;
+
+    if (data.status < 0 || data.status > 1) {
+        return response.status(400).json({ message: 'Status enviado não é permitido.' });
+    } else if (!data.status) {
+        return response.status(400).json({ message: 'Enviar o status é necessário!'});
+    }
+
+    const selectReserves = await getAllReserves(data.status);
+    if (selectReserves.length == 0) {
+        return response.status(400).json({ message: 'Nenhuma reserva encontrada'});
+    }
+
+    let currentDate = new Date().getTime();
+
+    if (data.export == 'csv') {
+        const csvWriter = createCsvWriter({
+            path: `../../report${currentDate}.csv`,
+            header: [
+                { id: 'id', title: 'ID' },
+                { id: 'start_reservation', title: 'Data Inicio' },
+                { id: 'final_reservation', title: 'Data Final' },
+                { id: 'reserved_hours', title: 'Horas Reservadas' },
+                { id: 'user_id', title: 'ID Usuário' },
+                { id: 'space_id', title: 'ID Espaço' },
+                { id: 'total_prize', title: 'Preço' },
+                { id: 'responsible_contact', title: 'Contato' },
+                { id: 'status', title: 'Status' }
+            ]
+        });
+         
+        csvWriter.writeRecords(selectReserves)
+            .then(() => {
+                //console.log(...Done)
+            });
+            
+        return response.status(201).json({ message: `O arquivo report${currentDate}.csv foi exportado com sucesso.`});
+    }
+
+    return response.status(200).json({ message: '', reserves: selectReserves });
+
+}
+
 module.exports = {
     login,
     getSpaces,
     getSpace,
     addSpace,
     updateStatus,
-    editSpace
+    editSpace,
+    getReserves
 }
