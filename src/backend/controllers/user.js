@@ -399,7 +399,7 @@ const addReserve = async (request, response) => {
     sendEmail(
         data.email, 
         'Space - Agendamento de Espaço', 
-        `A reserva  do espaço ${space.name} foi concluída com sucesso, este email será nosso nosso canal de contato para esta reserva!
+        `A reserva  do espaço ${space[0].name} foi concluída com sucesso, este email será nosso nosso canal de contato para esta reserva!
         
         Atenciosamente, Grupo Q Fiap`,
         );
