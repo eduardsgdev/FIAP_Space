@@ -90,7 +90,7 @@ function listReserves() {
         verifyToken('Listar Reservas', data.message, response.status);
 
         if (response.status == 400) {
-            return createTopModal('Listar Reservas', data.message, 'text-bg-danger');
+            return uiInfoToCards(deckCardsActives, deckCardsInactives);
         }
 
         const now = new Date();
@@ -130,15 +130,10 @@ function listReserves() {
                 deckCardsActives.appendChild(card);
             }
         });
-        deckCardsActives.getElementsByClassName('card-pass-r').length == 0 
-            ? deckCardsActives.innerHTML = `<div class="alert alert-primary ms-3 bi bi-info-circle" role="alert"> Você não tem nenhuma reserva ativa!</div>`
-            : '';
-        deckCardsInactives.getElementsByClassName('card-pass-r').length == 0 
-            ? deckCardsInactives.innerHTML = `<div class="alert alert-primary ms-3 bi bi-info-circle" role="alert"> Você não possui histórico!</div>`
-            : '';
+        uiInfoToCards(deckCardsActives, deckCardsInactives);
 
         var cancelReserveBtn = document.getElementsByClassName('btns-reserve-user');
-        cancelReserve(cancelReserveBtn);
+        setBtnsCancel(cancelReserveBtn);
         
     }).finally(() => {
         loadingRemove(loading);
@@ -167,52 +162,61 @@ function isActive(status, timeStartReserve = false) {
     }
 }
 
-function cancelReserve(reserves) {
-    let id = '';
+let id = '';
+function setBtnsCancel(reserves) {  
     Array.from(reserves).forEach(reserve => {
         reserve.addEventListener('click', () => {
             id = reserve.id;
             createTopModal('Cancelar Reserva', 'Essa ação é irreversível!', 'text-bg-danger', 'Continuar');
         });
     });
+}
 
-    document.addEventListener('click', (btn) => {
+document.addEventListener('click', (btn) => {
 
-        if (btn.target.textContent === 'Continuar') {
-            
-            const body = {
-                reserve_id: id,
-                status: "0"
-            }
-
-            const requestOptions = {
-                method: 'POST',
-                headers: {
-                'authorization': token,
-                'Content-Type': 'application/json'
-                },
-                mode: 'cors',
-                body: JSON.stringify(body)
-            }
-
-            fetch(api + '/src/backend/controllers/user/reserveCancel', requestOptions)
-            .then(async response => { 
-                const data = await response.json();
-
-                verifyToken('Cancelar Reserva', data.message, response.status);
-
-                if (response.status == 400) {
-                    return createTopModal('Cancelar Reserva', data.message, 'text-bg-danger');
-                }
-                setTimeout(() => {
-                    listReserves();
-                }, 2000);
-
-                createTopModal('Cancelar Reserva', data.message, 'text-bg-success');
-
-            });
+    if (btn.target.textContent === 'Continuar') {
+        
+        const body = {
+            reserve_id: id,
+            status: "0"
         }
-    });
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+            'authorization': token,
+            'Content-Type': 'application/json'
+            },
+            mode: 'cors',
+            body: JSON.stringify(body)
+        }
+
+        fetch(api + '/src/backend/controllers/user/reserveCancel', requestOptions)
+        .then(async response => { 
+            const data = await response.json();
+
+            verifyToken('Cancelar Reserva', data.message, response.status);
+
+            if (response.status == 400) {
+                return createTopModal('Cancelar Reserva', data.message, 'text-bg-danger');
+            }
+            setTimeout(() => {
+                listReserves();
+            }, 2000);
+
+            createTopModal('Cancelar Reserva', data.message, 'text-bg-success');
+
+        });
+    }
+});
+
+function uiInfoToCards(elementsActives, elementsHistory) {
+    elementsActives.getElementsByClassName('card-pass-r').length == 0 
+        ? elementsActives.innerHTML = `<div class="alert alert-primary ms-3 bi bi-info-circle" role="alert"> Você não tem nenhuma reserva ativa!</div>`
+        : '';
+    elementsHistory.getElementsByClassName('card-pass-r').length == 0 
+        ? elementsHistory.innerHTML = `<div class="alert alert-primary ms-3 bi bi-info-circle" role="alert"> Você não possui histórico!</div>`
+        : '';
 }
         
 </script>
