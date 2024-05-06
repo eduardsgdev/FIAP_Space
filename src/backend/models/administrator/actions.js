@@ -43,7 +43,7 @@ const updateSpace = (data) => {
 }
 
 const getAllReserves = (status) => {
-    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { status: status }, 'spaces.name' , '%%', 'start_reservation', 'desc');
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { status: status }, 'spaces.name' , '%%', 'start_reservation', 'asc');
 }
 
 module.exports = {
