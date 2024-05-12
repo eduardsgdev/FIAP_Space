@@ -196,3 +196,13 @@
         flex-wrap: wrap;
     }
 }
+@media (max-width: 375px) {
+    .btns-reserve-user {
+        font-size: x-small;
+    }
+}
+@media (max-width: 450px) {
+    .icon-x-custom {
+        display: none;
+    }
+}

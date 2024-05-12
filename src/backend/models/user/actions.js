@@ -81,6 +81,19 @@ const checkRecorrencyReserve = (spaceId) => {
     return selectRows('spaces_reserved', '*', { space_id: spaceId, status: 1 }, 'id', 'desc');
 }
 
+const updateReserve = (reserveId, updateData) => {
+    updateRow('spaces_reserved', {
+        start_reservation: updateData.start_reservation,
+        final_reservation: updateData.final_reservation,
+        reserved_hours: updateData.qtd_hours,
+        total_prize: updateData.total_prize
+    }, 'id', reserveId);
+}
+
+const getUserActiveReserve = (userId, reserveId) => {
+    return selectInnerJoin('spaces_reserved', '*', 'spaces', '*', { user_id: userId, id: reserveId, status: 1 }, 'spaces.name' , '%%', 'id', 'asc');
+}
+
 module.exports = {
     insertUser,
     checkLoginAvailable,
@@ -96,5 +109,7 @@ module.exports = {
     reserveUpdate,
     checkSpaceAvailable,
     addUserReserve,
-    checkRecorrencyReserve
+    checkRecorrencyReserve,
+    updateReserve,
+    getUserActiveReserve
 }

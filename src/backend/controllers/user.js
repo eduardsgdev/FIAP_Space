@@ -17,7 +17,9 @@ const {
     reserveUpdate,
     checkSpaceAvailable,
     addUserReserve,
-    checkRecorrencyReserve
+    checkRecorrencyReserve,
+    updateReserve,
+    getUserActiveReserve
 } = require('../models/user/actions.js');
 const { insertLog, updateLastLogin } = require('../models/utilFunctions.js');
 const { baseUrl } = require('../config/baseUrl.js');
@@ -382,8 +384,9 @@ const addReserve = async (request, response) => {
         return response.status(400).json({ message: 'Este espaço não está disponível.'});
     }
 
-    data.total_prize = space[0].prize * data.qtd_hours;
+    data.total_prize = space[0].prize * diff.hours();
     data.user_id = decodedToken.userData.id;
+    data.qtd_hours = diff.hours();
 
     const selectReserve = await checkSpaceAvailable(data.space_id, data.start_reservation, data.final_reservation);
     const reserve = selectReserve[0];    
@@ -408,6 +411,90 @@ const addReserve = async (request, response) => {
 
 }
 
+const editReserve = async (request, response) => {
+    /*request example = {
+        reserve_id: 1,
+        start_reservation: '2024-03-05 08:00:00',
+        final_reservation: '2024-03-05 12:00:00',
+        qtd_hours: 4,
+        email: jose.maluquinho@gmail.com,
+    }*/
+    const jwt = request.headers['authorization'];
+    const decodedToken = await decodedWebToken(jwt);
+    const data = request.body;
+
+    const fieldArr = ['reserve_id', 'start_reservation', 'final_reservation', 'email'];
+    for (const item of fieldArr) {
+        if (data[item] == undefined || data[item] == '') {
+            return response.status(400).json({ message: 'Todos os campos são obrigatórios!' });
+        }
+    }
+
+    const selectReserve = await getUserActiveReserve(decodedToken.userData.id, data.reserve_id);
+    const reserve = selectReserve[0];
+
+    if (!reserve) {
+        return response.status(400).json({ message: 'Lamento, esta reserva não foi encontrada.'});
+    }
+
+    const now = new Date().getTime();
+    const postStartDate = new Date(data.start_reservation).getTime();
+    const reserveStartDate = new Date(reserve.start_reservation).getTime();
+
+    if (reserveStartDate < now) {
+        return response.status(400).json({ message: 'Você não pode editar uma reserva finalizada!' });
+    }
+
+    if (now > postStartDate) {
+        return response.status(400).json({ message: 'Você não pode fazer uma reserva com a data passada.'});
+    }
+  
+    if (data.start_reservation > data.final_reservation) {
+        return response.status(400).json({ message: 'A data inicial não pode ser maior que o final da reserva.' });
+    }
+
+    const start = moment(data.start_reservation, 'YYYY-MM-DD HH:mm:ss');
+    const end = moment(data.final_reservation, 'YYYY-MM-DD HH:mm:ss');
+
+    const diff = moment.duration(end.diff(start));
+
+    if (data.qtd_hours < 1 || diff.hours() == 0) {
+        return response.status(400).json({ message: 'A permanencia mínima de horas não pode ser menor que 1 hora.' });
+    } else if (data.qtd_hours > 8 || diff.hours() >= 8 && diff.minutes() > 0) {
+        return response.status(400).json({ message: 'A permanencia máxima de horas não pode ser maior que 8 horas.' });
+    }
+
+    const space = await listSpace(reserve.spaces.id);
+    if (space.length == 0) {
+        return response.status(400).json({ message: 'Este espaço não está disponível.'});
+    }
+
+    data.total_prize = space[0].prize * diff.hours();
+    data.qtd_hours = diff.hours();
+
+    const selectAlreadyReserve = await checkSpaceAvailable(reserve.spaces.id, data.start_reservation, data.final_reservation);
+    const alreadyReserve = selectAlreadyReserve[0];    
+
+    if (alreadyReserve && alreadyReserve.user_id != decodedToken.userData.id) {
+        return response.status(400).json({ message: 'Já existe uma reserva para este local no periodo solicitado.' });
+    }
+
+    insertLog('logs_user', decodedToken.userData.id, 'EDITRESERVE', data);
+
+    updateReserve(reserve.id, data);
+
+    sendEmail(
+        data.email, 
+        'Space - Agendamento de Espaço',
+        `A reserva  do espaço ${space[0].name} foi editada com sucesso.
+        
+        Atenciosamente, Grupo Q Fiap`,
+        );
+
+    return response.status(200).json({ message: 'Sua reserva foi editada com sucesso.' });
+
+}
+
 module.exports = {
     addUser,
     login,
@@ -419,4 +506,5 @@ module.exports = {
     getReserve,
     reserveCancel,
     addReserve,
+    editReserve
 }

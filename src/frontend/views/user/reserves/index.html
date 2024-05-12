@@ -17,7 +17,7 @@
                 <ul class="navbar-nav me-auto">
                     <li class="d-block d-inline-flex m-3">
                         <a id="user-reserves">
-                            <i class="bi bi-luggage text-primary d-flex justify-content-center pointer"></i>
+                            <i class="bi bi-luggage text-primary d-flex justify-content-center pointer" id="bag"></i>
                             <span class="d-flex text-primary mt-1" style="font-size: small;">Minhas Reservas</span>
                         </a>
                         <a id="user-logout" class="ms-3" onclick="localStorage.removeItem('tokenUserFiap'); window.location.href = '../login/index.html';" style="text-decoration: none;">
@@ -29,7 +29,7 @@
             </div>
         </div>
     </nav>
-    <div>
+    <div id="list-reserves">
         <h2 class="ms-3 mt-5">Reservas Ativas: </h2>
         <div class="d-flex justify-content-center">
             <div id="list-reserves-user" class="mt-5 ms-2 me-4 d-block w-100 ">
@@ -100,9 +100,9 @@ function listReserves() {
             const card = document.createElement('div');
             card.className = 'card m-2 card-pass-r border w-100';
             card.innerHTML = `
-                <div class="card-body">
+                <div class="card-body ${isActive(reserves.status, reserveTimestamp.getTime()).classBtn == true ? 'btn' : ''}" id="${reserves.spaces.id + "-" + reserves.id}">
                     <h5 class="card-title text-truncate me-2 d-flex justify-content-start m-1">${reserves.spaces.name}</h5>
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between mt-2">
                         <div>
                             <span class="card-text" style="font-size: small m-1">${reserves.spaces.address}  <i class="bi bi-signpost-split m-1"></i></span>
                         </div>
@@ -112,17 +112,20 @@ function listReserves() {
                     </div>
                     <div class="d-flex justify-content-between mt-3" style="font-size: small">
                         <span class="card-text m-1">${reserves.spaces.city + ", " + reserves.spaces.state} <i class="bi bi-geo-alt m-1"></i></span>
-                        <span class="card-text m-1 ms-2">Inicio: ${brazilianDate(reserves.start_reservation)} <i class="bi bi-calendar-check m-1"></i></span>
                         <span class="card-text m-1">${reserves.spaces.type} <i class="bi-house-heart-fill m-1"></i></span>
                     </div>
-                    <div class="d-flex justify-content-between mt-4 fs-6">
-                        <button id="${reserves.id}"
-                            class="btn btn-outline-danger btns-reserve-user m-1" ${isActive(reserves.status, reserveTimestamp.getTime()).disabled}>
-                            <i class="bi bi-x-circle m-1"></i> ${isActive(reserves.status, reserveTimestamp.getTime()).status}</button>
-                        <span class="card-text m-1" style="font-size: small">Término: ${brazilianDate(reserves.final_reservation)} <i class="bi bi-calendar-x m-1"></i></span>
-                        <span id="prize-card">Total: $ ${reserves.total_prize}</span>
+                    <div class="d-flex justify-content-between mt-3" style="font-size: small">
+                        <span class="card-text m-1">Inicio: ${brazilianDate(reserves.start_reservation)} <i class="bi bi-calendar-check m-1"></i></span>
+                        <span class="card-text m-1">Término: ${brazilianDate(reserves.final_reservation)} <i class="bi bi-calendar-x m-1"></i></span>
                     </div>
-                </div>`;
+                </div>
+                <div class="d-flex justify-content-between m-3 fs-5">
+                    <button id="${reserves.id}"
+                        class="btn btn-outline-danger btns-reserve-user mb-2" ${isActive(reserves.status, reserveTimestamp.getTime()).disabled}>
+                        <i class="bi bi-x-circle icon-x-custom m-1"></i> ${isActive(reserves.status, reserveTimestamp.getTime()).status}</button>
+                    <span id="prize-card">Total: $ ${reserves.total_prize}</span>
+                </div>
+                `;
             
             if (reserves.status == 0 || (reserveTimestamp.getTime() < now.getTime())) {
                 deckCardsInactives.appendChild(card);
@@ -133,7 +136,9 @@ function listReserves() {
         uiInfoToCards(deckCardsActives, deckCardsInactives);
 
         var cancelReserveBtn = document.getElementsByClassName('btns-reserve-user');
+        var cardBodyBtns = document.getElementsByClassName('card-body');
         setBtnsCancel(cancelReserveBtn);
+        editReserve(cardBodyBtns);
         
     }).finally(() => {
         loadingRemove(loading);
@@ -146,6 +151,7 @@ function isActive(status, timeStartReserve = false) {
     if (status == 1 && timeStartReserve > now.getTime()) {
         return { 
             status: 'Cancelar',
+            classBtn: true
         }
     }
 
@@ -162,11 +168,23 @@ function isActive(status, timeStartReserve = false) {
     }
 }
 
-let id = '';
-function setBtnsCancel(reserves) {  
+function editReserve(cards) {
+    Array.from(cards).forEach(reserve => {
+        reserve.addEventListener('click', () => {
+            let spaceAndReserveId = reserve.id;
+            let parts = spaceAndReserveId.split('-');
+            if (reserve.classList.contains('btn')) {
+                window.location.href = `../booking-schedule/index.html?id=${parts[0]}&reserve=${parts[1]}`;
+            }
+        });
+    });
+}
+
+let idReserve = '';
+function setBtnsCancel(reserves) {
     Array.from(reserves).forEach(reserve => {
         reserve.addEventListener('click', () => {
-            id = reserve.id;
+            idReserve = reserve.id;
             createTopModal('Cancelar Reserva', 'Essa ação é irreversível!', 'text-bg-danger', 'Continuar');
         });
     });
@@ -177,7 +195,7 @@ document.addEventListener('click', (btn) => {
     if (btn.target.textContent === 'Continuar') {
         
         const body = {
-            reserve_id: id,
+            reserve_id: idReserve,
             status: "0"
         }
 

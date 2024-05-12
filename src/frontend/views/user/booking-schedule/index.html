@@ -136,6 +136,7 @@ document.getElementById('email').value = email;
 const queryString = new URLSearchParams(window.location.search);
 const getValueQueryString = (param) => queryString.get(param);
 const spaceId = getValueQueryString('id');
+const reserveId = getValueQueryString('reserve');
 
 var deckCards = document.getElementById('schedule-booking-user');
 var prize = document.getElementById('prize');
@@ -269,8 +270,20 @@ form.addEventListener('submit', (event) => {
         email: email
     }
 
+    let requestMethod = '';
+    let endpoint = '';
+
+    if (reserveId) {//edit
+        body.reserve_id = reserveId;
+        requestMethod = 'POST';
+        endpoint = 'editReserve';
+    } else {//create
+        requestMethod = 'PUT';
+        endpoint = 'addReserve';
+    }
+
     const requestOptions = {
-        method: 'PUT',
+        method: requestMethod,
         headers: {
         'authorization': token,
         'Content-Type': 'application/json'
@@ -279,13 +292,13 @@ form.addEventListener('submit', (event) => {
         body: JSON.stringify(body)
     }
 
-    fetch(api + '/src/backend/controllers/user/addReserve', requestOptions)
+    fetch(api + `/src/backend/controllers/user/${endpoint}`, requestOptions)
     .then(async response => {
         const data = await response.json();
 
         verifyToken('Reservar Espaço', data.message, response.status);
 
-        if (response.status != 201) {
+        if (response.status >= 400) {
             return createTopModal('Reservar Espaço', data.message, 'text-bg-danger');
         }
 
@@ -293,6 +306,9 @@ form.addEventListener('submit', (event) => {
     }).finally(() => {
         submitBtn.disabled = false;
         loadingRemove(submitBtn);
+        setTimeout(() => {
+            window.location.href = '../reserves/index.html';
+        }, 2000);
     });
 });
 
