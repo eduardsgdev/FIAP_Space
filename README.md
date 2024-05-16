@@ -12,7 +12,9 @@
 
 Este projeto denominado "Tech Challenge" englobará os conhecimentos obtidos na disciplina de Versionamento e Cloud, do curso de Coding & Tech Journey From User to Creator da FIAP. A solução consiste em um sistema de Reservas Online simplificado, de interface amigável. O administrador poderá cadastrar e gerenciar todos os espaços e reservas, já o usuário poderá visualizar os espaços cadastrados, consultar sua disponibilidade de agenda (data e horário) e gerenciar suas reservas de modo eficiente.
 
-- **Como startar Localmente**
+## [VÍDEO SOBRE AS FUNÇÕES SOLICITADAS NO TECH CHALLENGE](https://drive.google.com/file/d/1Zb5kNwA3Jd8KwLkeMKwk3DQGDoitli7r/view?usp=drive_link)
+
+## Como startar Localmente
 
 Para rodar localmente o projeto, após clonar a branch.
 
