@@ -303,12 +303,12 @@ form.addEventListener('submit', (event) => {
         }
 
         createTopModal('Reservar Espaço', data.message, 'text-bg-success');
-    }).finally(() => {
-        submitBtn.disabled = false;
-        loadingRemove(submitBtn);
         setTimeout(() => {
             window.location.href = '../reserves/index.html';
         }, 2000);
+    }).finally(() => {
+        submitBtn.disabled = false;
+        loadingRemove(submitBtn);
     });
 });
 
